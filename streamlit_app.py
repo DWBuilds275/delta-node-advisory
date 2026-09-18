@@ -24,22 +24,23 @@ with col3:
 
 st.divider()
 
-st.header("🇺🇸 Latest US Federal Register Updates for Egypt")
+st.header("🇺🇸 Latest US Trade Actions Affecting Egypt")
 
-if st.button("Fetch Latest Updates"):
-    with st.spinner("Checking the Federal Register..."):
-        df = fetch_federal_register_updates()
-        
-        if not df.empty:
-            st.success(f"Found {len(df)} recent notices.")
-            st.dataframe(
-                df, 
-                use_container_width=True,
-                column_config={
-                    "Link": st.column_config.LinkColumn("Read Full Notice")
-                }
-            )
-        else:
-            st.warning("No recent notices found for 'Egypt'. This is good news—no new trade actions on the horizon.")
+with st.spinner("Checking the Federal Register..."):
+    df = fetch_federal_register_updates()
+
+if not df.empty:
+    st.success(f"Found {len(df)} recent trade-related notices. Review the latest actions below.")
+    st.dataframe(
+        df,
+        use_container_width=True,
+        column_config={
+            "Link": st.column_config.LinkColumn("Read Full Notice", display_text="Open →")
+        },
+        hide_index=True
+    )
+    st.caption(f"Last updated: {pd.Timestamp.now().strftime('%B %d, %Y at %I:%M %p')}")
+else:
+    st.info("No recent notices found. Your Egypt-sourced supply chain is clear of new US trade actions this week.")
 
 st.caption("Data source: Federal Register API (public domain)")
