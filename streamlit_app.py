@@ -40,8 +40,9 @@ categories = [
 
 selected_category = st.selectbox("Filter by product category:", categories)
 
+# Each category now uses a more specific search phrase
 category_map = {
-    "All products": "Egypt tariff trade",
+    "All products": "Egypt",
     "Steel & Metals": "Egypt steel",
     "Textiles & Apparel": "Egypt textile",
     "Aluminum": "Egypt aluminum",
@@ -56,46 +57,65 @@ with st.spinner(f"Checking the Federal Register for {selected_category.lower()}.
     df = fetch_federal_register_updates(search_term)
 
 if not df.empty:
-    st.success(f"Found {len(df)} recent notices for **{selected_category}**.")
-    st.dataframe(
-        df,
-        use_container_width=True,
-        column_config={
-            "Link": st.column_config.LinkColumn("Read Full Notice", display_text="Open →")
-        },
-        hide_index=True
-    )
-    st.caption(f"Last updated: {datetime.now().strftime('%B %d, %Y at %I:%M %p')}")
+    # Apply additional client-side filter based on category
+    if selected_category != "All products":
+        category_keywords = {
+            "Steel & Metals": ["steel", "metal", "iron", "rebar"],
+            "Textiles & Apparel": ["textile", "apparel", "cotton", "garment", "fabric"],
+            "Aluminum": ["aluminum", "aluminium"],
+            "Agriculture & Food": ["agriculture", "food", "crop", "grain", "produce"],
+            "Chemicals": ["chemical", "petrochemical"],
+            "Machinery": ["machinery", "equipment", "mechanical"]
+        }
+        keywords = category_keywords.get(selected_category, [])
+        if keywords:
+            mask = df["Title"].str.lower().str.contains("|".join(keywords), na=False)
+            df = df[mask]
 
-    st.divider()
-    st.subheader("📄 Generate Client Report")
-    st.write("Create a client-ready PDF compliance brief based on the data above.")
+    if not df.empty:
+        st.success(f"Found {len(df)} recent notices for **{selected_category}**.")
+        st.dataframe(
+            df,
+            use_container_width=True,
+            column_config={
+                "Link": st.column_config.LinkColumn("Read Full Notice", display_text="Open →")
+            },
+            hide_index=True
+        )
+        st.caption(f"Last updated: {datetime.now().strftime('%B %d, %Y at %I:%M %p')}")
 
-    col_a, col_b = st.columns(2)
-    with col_a:
-        client_name = st.text_input("Client company name:", placeholder="e.g., Acme Importers LLC")
-    with col_b:
-        contact_name = st.text_input("Contact person:", placeholder="e.g., John Smith")
+        st.divider()
+        st.subheader("📄 Generate Client Report")
+        st.write("Create a client-ready PDF compliance brief based on the data above.")
 
-    if st.button("Generate PDF Report", type="primary"):
-        if not client_name:
-            st.warning("Please enter a client company name.")
-        else:
-            with st.spinner("Building report..."):
-                pdf_bytes = generate_client_report(
-                    client_name=client_name,
-                    contact_name=contact_name or "Client",
-                    category=selected_category,
-                    df=df
-                )
-                filename = f"Delta_Node_Brief_{client_name.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d')}.pdf"
-                st.download_button(
-                    label="⬇️ Download PDF Report",
-                    data=pdf_bytes,
-                    file_name=filename,
-                    mime="application/pdf"
-                )
-                st.success("Report generated. Click the button above to download.")
+        col_a, col_b = st.columns(2)
+        with col_a:
+            client_name = st.text_input("Client company name:", placeholder="e.g., Acme Importers LLC")
+        with col_b:
+            contact_name = st.text_input("Contact person:", placeholder="e.g., John Smith")
+
+        if st.button("Generate PDF Report", type="primary"):
+            if not client_name:
+                st.warning("Please enter a client company name.")
+            else:
+                with st.spinner("Building report..."):
+                    pdf_bytes = generate_client_report(
+                        client_name=client_name,
+                        contact_name=contact_name or "Client",
+                        category=selected_category,
+                        df=df
+                    )
+                    filename = f"Delta_Node_Brief_{client_name.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d')}.pdf"
+                    st.download_button(
+                        label="⬇️ Download PDF Report",
+                        data=pdf_bytes,
+                        file_name=filename,
+                        mime="application/pdf"
+                    )
+                    st.success("Report generated. Click the button above to download.")
+    else:
+        st.info(f"No Egypt-specific notices found in the **{selected_category}** category this week.")
+        st.caption("This is good news — no new trade actions on the horizon for your category.")
 else:
     st.info(f"No recent notices found for **{selected_category}**.")
 
