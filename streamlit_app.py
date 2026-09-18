@@ -11,7 +11,7 @@ st.set_page_config(
 )
 
 st.title("🇪🇬 Delta Node Advisory")
-st.caption("AI-powered trade compliance intelligence for US importers sourcing from Egypt")
+st.caption("Live Trade Compliance Intelligence for US Importers Sourcing from Egypt")
 
 st.divider()
 
