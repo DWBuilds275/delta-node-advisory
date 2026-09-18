@@ -145,7 +145,7 @@ def generate_client_report(client_name, contact_name, category, df):
     pdf.set_font("Helvetica", "", 9)
     pdf.set_text_color(0, 0, 0)
     pdf.cell(0, 5, "Delta Node Advisory, LLC", ln=True)
-    pdf.cell(0, 5, "Email: info@deltanodeadvisory.com", ln=True)
-    pdf.cell(0, 5, "Wyoming Registered | Serving US Importers Sourcing from Egypt", ln=True)
+    pdf.cell(0, 5, "Email: dwilson@deltanodeadvisory.com", ln=True)
+    pdf.cell(0, 5, "US Registered Consultancy | Serving US Importers", ln=True)
 
     return bytes(pdf.output())
