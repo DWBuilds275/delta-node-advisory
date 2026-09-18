@@ -9,7 +9,7 @@ class ComplianceReport(FPDF):
         self.cell(0, 10, "Delta Node Advisory, LLC", ln=True, align="C")
         self.set_font("Helvetica", "", 10)
         self.set_text_color(100, 100, 100)
-        self.cell(0, 6, "AI-Powered Trade Compliance Intelligence", ln=True, align="C")
+        self.cell(0, 6, "Live Trade Compliance Intelligence for US Importers", ln=True, align="C")
         self.ln(4)
         self.set_draw_color(15, 40, 90)
         self.set_line_width(0.5)
