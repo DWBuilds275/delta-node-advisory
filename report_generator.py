@@ -148,4 +148,15 @@ def generate_client_report(client_name, contact_name, category, df):
     pdf.cell(0, 5, "Email: dwilson@deltanodeadvisory.com", ln=True)
     pdf.cell(0, 5, "US Registered Consultancy | Serving US Importers", ln=True)
 
+    pdf.ln(6)
+
+    # Disclaimer
+    pdf.set_font("Helvetica", "I", 7)
+    pdf.set_text_color(120, 120, 120)
+    pdf.multi_cell(0, 4,
+        "This brief is prepared for informational purposes only and does not constitute "
+        "legal advice. Importers should consult with a licensed customs broker or trade "
+        "attorney for specific guidance on their import operations."
+    )
+
     return bytes(pdf.output())
