@@ -26,11 +26,37 @@ st.divider()
 
 st.header("🇺🇸 Latest US Trade Actions Affecting Egypt")
 
-with st.spinner("Checking the Federal Register..."):
-    df = fetch_federal_register_updates()
+# Filter by product category
+categories = [
+    "All products",
+    "Steel & Metals",
+    "Textiles & Apparel",
+    "Aluminum",
+    "Agriculture & Food",
+    "Chemicals",
+    "Machinery"
+]
+
+selected_category = st.selectbox("Filter by product category:", categories)
+
+# Map user-friendly categories to search terms
+category_map = {
+    "All products": "Egypt tariff trade",
+    "Steel & Metals": "Egypt steel",
+    "Textiles & Apparel": "Egypt textile",
+    "Aluminum": "Egypt aluminum",
+    "Agriculture & Food": "Egypt agriculture",
+    "Chemicals": "Egypt chemical",
+    "Machinery": "Egypt machinery"
+}
+
+search_term = category_map[selected_category]
+
+with st.spinner(f"Checking the Federal Register for {selected_category.lower()}..."):
+    df = fetch_federal_register_updates(search_term)
 
 if not df.empty:
-    st.success(f"Found {len(df)} recent trade-related notices. Review the latest actions below.")
+    st.success(f"Found {len(df)} recent notices for **{selected_category}**.")
     st.dataframe(
         df,
         use_container_width=True,
@@ -41,6 +67,7 @@ if not df.empty:
     )
     st.caption(f"Last updated: {pd.Timestamp.now().strftime('%B %d, %Y at %I:%M %p')}")
 else:
-    st.info("No recent notices found. Your Egypt-sourced supply chain is clear of new US trade actions this week.")
+    st.info(f"No recent notices found for **{selected_category}**. Your supply chain in this category is clear of new US trade actions this week.")
 
-st.caption("Data source: Federal Register API (public domain)")
+st.divider()
+st.caption("Data source: Federal Register API (public domain) | Built by Delta Node Advisory, LLC")
