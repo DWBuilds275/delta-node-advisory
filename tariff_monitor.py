@@ -2,13 +2,12 @@ import requests
 import pandas as pd
 
 def fetch_federal_register_updates(keyword="Egypt"):
-    # Using the Federal Register API (free, no key needed)
     base_url = "https://www.federalregister.gov/api/v1/documents.json"
     
+    # Broader search: match any of these terms
     params = {
-        "conditions[term]": keyword,
-        "conditions[type][]": "Notice",
-        "per_page": 5,
+        "conditions[term]": "Egypt tariff trade",
+        "per_page": 10,
         "order": "newest"
     }
     
@@ -22,9 +21,11 @@ def fetch_federal_register_updates(keyword="Egypt"):
     results = []
     for doc in data.get("results", []):
         results.append({
-            "Date": doc["publication_date"],
-            "Title": doc["title"],
-            "Link": doc["html_url"]
+            "Date": doc.get("publication_date", "N/A"),
+            "Type": doc.get("type", "N/A"),
+            "Agency": ", ".join(doc.get("agencies", [{}])[0].get("name", "N/A") for _ in [0]) if doc.get("agencies") else "N/A",
+            "Title": doc.get("title", "No title"),
+            "Link": doc.get("html_url", "#")
         })
     
     return pd.DataFrame(results)
