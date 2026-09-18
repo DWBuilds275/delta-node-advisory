@@ -1,6 +1,5 @@
 from fpdf import FPDF
 from datetime import datetime
-import io
 
 
 class ComplianceReport(FPDF):
@@ -26,6 +25,7 @@ class ComplianceReport(FPDF):
 
 def generate_client_report(client_name, contact_name, category, df):
     pdf = ComplianceReport()
+    pdf.set_margins(left=10, top=10, right=10)
     pdf.add_page()
     pdf.set_auto_page_break(auto=True, margin=15)
 
@@ -43,54 +43,64 @@ def generate_client_report(client_name, contact_name, category, df):
     pdf.cell(0, 6, f"Date Issued: {datetime.now().strftime('%B %d, %Y')}", ln=True)
     pdf.ln(4)
 
-    # Executive summary
+    # Executive Summary
     pdf.set_font("Helvetica", "B", 12)
     pdf.set_text_color(15, 40, 90)
     pdf.cell(0, 8, "Executive Summary", ln=True)
 
     pdf.set_font("Helvetica", "", 10)
     pdf.set_text_color(0, 0, 0)
-    pdf.multi_cell(0, 5,
+    summary = (
         f"This brief summarizes active US trade actions and regulatory notices "
         f"affecting Egyptian imports in the {category.lower()} category as of "
         f"{datetime.now().strftime('%B %d, %Y')}. All data is sourced from the "
         f"US Federal Register (public domain)."
     )
-    pdf.ln(3)
+    pdf.multi_cell(0, 5, summary)
+    pdf.ln(4)
 
-    # Data table
+    # Active Trade Actions Table
     pdf.set_font("Helvetica", "B", 11)
     pdf.set_text_color(15, 40, 90)
     pdf.cell(0, 8, "Active Trade Actions", ln=True)
 
+    # Table header
     pdf.set_font("Helvetica", "B", 8)
     pdf.set_text_color(255, 255, 255)
     pdf.set_fill_color(15, 40, 90)
 
-    col_widths = [22, 25, 42, 101]
+    col_widths = [20, 22, 40, 108]
     headers = ["Date", "Type", "Agency", "Title"]
     for w, h in zip(col_widths, headers):
         pdf.cell(w, 7, h, border=1, fill=True)
     pdf.ln()
 
-    pdf.set_font("Helvetica", "", 8)
+    # Table rows
+    pdf.set_font("Helvetica", "", 7)
     pdf.set_text_color(0, 0, 0)
 
     fill = False
     for _, row in df.iterrows():
-        pdf.set_fill_color(240, 245, 250) if fill else pdf.set_fill_color(255, 255, 255)
+        if fill:
+            pdf.set_fill_color(240, 245, 250)
+        else:
+            pdf.set_fill_color(255, 255, 255)
 
-        title = str(row.get("Title", ""))[:90]
-        pdf.cell(22, 6, str(row.get("Date", ""))[:10], border=1, fill=fill)
-        pdf.cell(25, 6, str(row.get("Type", ""))[:12], border=1, fill=fill)
-        pdf.cell(42, 6, str(row.get("Agency", ""))[:22], border=1, fill=fill)
-        pdf.cell(101, 6, title, border=1, fill=fill)
+        title = str(row.get("Title", ""))[:85]
+        date_str = str(row.get("Date", ""))[:10]
+        type_str = str(row.get("Type", ""))[:11]
+        agency_str = str(row.get("Agency", ""))[:20]
+
+        pdf.cell(20, 6, date_str, border=1, fill=fill)
+        pdf.cell(22, 6, type_str, border=1, fill=fill)
+        pdf.cell(40, 6, agency_str, border=1, fill=fill)
+        pdf.cell(108, 6, title, border=1, fill=fill)
         pdf.ln()
         fill = not fill
 
-    pdf.ln(5)
+    pdf.ln(6)
 
-    # Risk assessment
+    # Risk Assessment
     pdf.set_font("Helvetica", "B", 11)
     pdf.set_text_color(15, 40, 90)
     pdf.cell(0, 8, "Risk Assessment", ln=True)
@@ -123,8 +133,9 @@ def generate_client_report(client_name, contact_name, category, df):
     ]
     for rec in recommendations:
         pdf.multi_cell(0, 5, rec)
+        pdf.ln(1)
 
-    pdf.ln(6)
+    pdf.ln(4)
 
     # Contact block
     pdf.set_font("Helvetica", "B", 10)
